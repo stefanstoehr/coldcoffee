@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const startButton = document.getElementById('start-button');
     const gameContainer = document.getElementById('game-container');
     const gameBoard = document.getElementById('game-board');
+    const overlay = document.getElementById('overlay');
+    const restartButton = document.getElementById('restart-button');
     const rows = 7;
     const cols = 17;
     const numberOfEnemies = 5;
@@ -17,6 +19,8 @@ document.addEventListener("DOMContentLoaded", function() {
         gameRunning = true;
         startScreen.style.display = 'none';
         gameContainer.style.display = 'block';
+        overlay.style.display = 'none'; // Verstecke das Overlay, wenn das Spiel neu gestartet wird
+        playerPosition = { row: rows - 2, col: 1 }; // Setze die Spielerposition zurück
         startTime = Date.now();
         resizeGameBoard();
         placeEnemies();
@@ -24,7 +28,17 @@ document.addEventListener("DOMContentLoaded", function() {
         timerInterval = setInterval(updateTimer, 1000);
     }
 
+    function resetGame() {
+        gameRunning = false;
+        clearInterval(enemyInterval);
+        clearInterval(timerInterval);
+        gameBoard.innerHTML = ''; // Entferne alle Inhalte aus dem Spielfeld
+        enemies = [];
+        startGame(); // Starte das Spiel neu
+    }
+
     startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', resetGame);
 
     function resizeGameBoard() {
         const boardWidth = gameBoard.clientWidth;
@@ -38,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
             cell.style.height = `${cellHeight}px`;
         });
     }
+
 
     function updateTimer() {
         if (gameRunning) {
@@ -70,8 +85,8 @@ document.addEventListener("DOMContentLoaded", function() {
         playerImage.className = 'player';
         newCell.appendChild(playerImage);
 
-        gameWon(); // Überprüfe, ob das Spiel gewonnen wurde
-        checkCollision(); // Überprüfe auf Kollisionen
+        gameWon();
+        checkCollision();
     }
 
     function moveSingleEnemy(enemy) {
@@ -105,12 +120,11 @@ document.addEventListener("DOMContentLoaded", function() {
             const move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
             const newCellIndex = move.row * cols + move.col;
             const newCell = gameBoard.children[newCellIndex];
-
-            const currentEnemyIndex = enemy.row * cols + enemy.col;
-            const currentEnemyCell = gameBoard.children[currentEnemyIndex];
-            const currentEnemyImage = currentEnemyCell.querySelector('.enemy');
+            const currentCellIndex = enemy.row * cols + enemy.col;
+            const currentCell = gameBoard.children[currentCellIndex];
+            const currentEnemyImage = currentCell.querySelector('.enemy');
             if (currentEnemyImage) {
-                currentEnemyCell.removeChild(currentEnemyImage);
+                currentCell.removeChild(currentEnemyImage);
             }
 
             enemy.row = move.row;
@@ -120,13 +134,15 @@ document.addEventListener("DOMContentLoaded", function() {
             enemyImage.src = 'images/gegner.png';
             enemyImage.className = 'enemy';
             newCell.appendChild(enemyImage);
-        }
 
-        checkCollision();
+            checkCollision();
+        }
     }
 
     function moveEnemies() {
-        enemies.forEach(moveSingleEnemy);
+        enemies.forEach(enemy => {
+            moveSingleEnemy(enemy);
+        });
     }
 
     function checkCollision() {
@@ -154,6 +170,23 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    /*
+    function checkCollision() {
+        enemies.forEach(enemy => {
+            if (enemy.row === playerPosition.row && enemy.col === playerPosition.col) {
+                const cellIndex = playerPosition.row * cols + playerPosition.col;
+                const cell = gameBoard.children[cellIndex];
+
+                const crossImage = document.createElement('img');
+                crossImage.src = 'images/cross.png';
+                cell.appendChild(crossImage);
+
+                endGame();
+            }
+        });
+    }
+    */
+
     function gameWon() {
         if (playerPosition.row === 1 && playerPosition.col === cols - 2) {
             showOverlay('YES!');
@@ -177,8 +210,56 @@ document.addEventListener("DOMContentLoaded", function() {
         clearInterval(timerInterval);
         gameRunning = false;
     }
+    
+    
+    /*function placeEnemies() {
+        const emptyCells = Array.from(gameBoard.children).filter(cell => {
+            const backgroundImg = cell.querySelector('img');
+            const isEmpty = !backgroundImg || (!backgroundImg.src.includes('gelb.png') && !backgroundImg.src.includes('braun.png'));
+            const isForbiddenCell = (Array.from(gameBoard.children).indexOf(cell) === (rows - 2) * cols + 1) || (Array.from(gameBoard.children).indexOf(cell) === 1 * cols + cols - 2);
+            return isEmpty && !isForbiddenCell && !cell.querySelector('.enemy');
+        });
 
+        while (enemies.length < numberOfEnemies && emptyCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const cell = emptyCells[randomIndex];
+            emptyCells.splice(randomIndex, 1);
+            const cellIndex = Array.from(gameBoard.children).indexOf(cell);
+            const row = Math.floor(cellIndex / cols);
+            const col = cellIndex % cols;
+            enemies.push({ row, col });
 
+            const enemyImage = document.createElement('img');
+            enemyImage.src = 'images/gegner.png';
+            enemyImage.className = 'enemy';
+            cell.appendChild(enemyImage);
+        }
+    }*/
+
+    
+    function placeEnemies() {
+        for (let i = 0; i < numberOfEnemies; i++) {
+            const enemyPosition = { row: Math.floor(Math.random() * rows), col: Math.floor(Math.random() * cols) };
+
+            const cellIndex = enemyPosition.row * cols + enemyPosition.col;
+            const cell = gameBoard.children[cellIndex];
+            const backgroundImg = cell.querySelector('img');
+            const isForbiddenCell = (enemyPosition.row === rows - 2 && enemyPosition.col === 1) || (enemyPosition.row === 1 && enemyPosition.col === cols - 2);
+
+            if (!backgroundImg && !isForbiddenCell) {
+                enemies.push(enemyPosition);
+                const enemyImage = document.createElement('img');
+                enemyImage.src = 'images/gegner.png';
+                enemyImage.className = 'enemy';
+                cell.appendChild(enemyImage);
+            } else {
+                i--; // Retry this enemy position if it is invalid
+            }
+        }
+    }
+    
+
+    
     document.addEventListener('keydown', function(event) {
         switch (event.key) {
             case 'ArrowUp':
@@ -266,31 +347,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (row >= 0 && row < rows && col >= 0 && col < cols) {
             movePlayer(row, col);
         }
-    });    
-
-    function placeEnemies() {
-        const emptyCells = Array.from(gameBoard.children).filter(cell => {
-            const backgroundImg = cell.querySelector('img');
-            const isEmpty = !backgroundImg || (!backgroundImg.src.includes('gelb.png') && !backgroundImg.src.includes('braun.png'));
-            const isForbiddenCell = (Array.from(gameBoard.children).indexOf(cell) === (rows - 2) * cols + 1) || (Array.from(gameBoard.children).indexOf(cell) === 1 * cols + cols - 2);
-            return isEmpty && !isForbiddenCell && !cell.querySelector('.enemy');
-        });
-
-        while (enemies.length < numberOfEnemies && emptyCells.length > 0) {
-            const randomIndex = Math.floor(Math.random() * emptyCells.length);
-            const cell = emptyCells[randomIndex];
-            emptyCells.splice(randomIndex, 1);
-            const cellIndex = Array.from(gameBoard.children).indexOf(cell);
-            const row = Math.floor(cellIndex / cols);
-            const col = cellIndex % cols;
-            enemies.push({ row, col });
-
-            const enemyImage = document.createElement('img');
-            enemyImage.src = 'images/gegner.png';
-            enemyImage.className = 'enemy';
-            cell.appendChild(enemyImage);
-        }
-    }
+    });
 
     resizeGameBoard(); // Initiale Größenanpassung
     window.addEventListener('resize', resizeGameBoard); // Größenanpassung bei Fenstergröße ändern
