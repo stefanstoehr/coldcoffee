@@ -1,0 +1,125 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #464646;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/*NEW*/
+#start-screen {
+    text-align: center;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+#start-screen h1 {
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    color: #333;
+}
+
+#start-screen p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: #666;
+}
+
+#start-button {
+    padding: 10px 20px;
+    font-size: 1.5em;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#start-button:hover {
+    background-color: #45a049;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(17, 1fr); /* 17 Spalten */
+    grid-template-rows: repeat(7, 1fr); /* 7 Zeilen */
+    width: 100vw; /* Volle Breite des Viewports */
+    height: 100vh; /* Volle Höhe des Viewports */
+    gap: 0; /* Kein Abstand zwischen den Zellen */
+    border: 5px solid black; /* Rand um das Spielfeld */
+}
+
+#game-board {
+    /*display: grid;
+    grid-template-columns: repeat(17, 18px);
+    grid-template-rows: repeat(7, 30px);
+    gap: 0;*/
+    border: 2px solid #333; /* Dunkler Rahmen um das Spielfeld */
+}
+
+/*NEW*/
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(17, 1fr); /* 17 Spalten */
+    grid-template-rows: repeat(7, 1fr); /* 7 Zeilen */
+    width: 100vw; /* Volle Breite des Viewports */
+    height: 100vh; /* Volle Höhe des Viewports */
+    gap: 0; /* Kein Abstand zwischen den Zellen */
+}
+
+.grid-cell {
+    position: relative;
+    width: 18px;
+    height: 30px;
+    overflow: hidden; /* Verhindert, dass der Inhalt über den Rand hinaus sichtbar ist */
+}
+
+/*NEW*/
+.grid-cell {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box; /* Verhindert, dass der Rand die Größe beeinflusst */
+}
+
+.player, .enemy {
+    width: 100%;
+    height: 100%;
+    position: absolute; /* Ermöglicht das exakte Platzieren der Spielfigur und Gegner */
+}
+
+.cross {
+    width: 100%;
+    height: 100%;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Dunkler Hintergrund mit Transparenz */
+    display: none; /* Versteckt, bis das Spiel gewonnen wird */
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 3em;
+    text-align: center;
+    z-index: 1000; /* Stellt sicher, dass das Overlay über dem Spiel liegt */
+}
+
+#overlay .message {
+    font-size: 3em;
+}
+
+#overlay .time {
+    font-size: 2em;
+}
+
+
